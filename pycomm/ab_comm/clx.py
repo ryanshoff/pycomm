@@ -457,8 +457,8 @@ class Driver(Base):
                 # Creating the Message Request Packet
                 message_request = [
                     pack_uint(Base._get_sequence()),
-                    chr(TAG_SERVICES_REQUEST["Read Tag Fragmented"]),  # the Request Service
-                    chr(len(rp) / 2),                                  # the Request Path Size length in word
+                    bytes([TAG_SERVICES_REQUEST["Read Tag Fragmented"]]),  # the Request Service
+                    bytes([len(rp) // 2]),                                  # the Request Path Size length in word
                     rp,                                                # the request path
                     pack_uint(counts),
                     pack_dint(self._byte_offset)
@@ -467,7 +467,7 @@ class Driver(Base):
             if self.send_unit_data(
                     build_common_packet_format(
                         DATA_ITEM['Connected'],
-                        ''.join(message_request),
+                        b''.join(message_request),
                         ADDRESS_ITEM['Connection Based'],
                         addr_data=self._target_cid,
                     )) is None:
@@ -641,7 +641,7 @@ class Driver(Base):
                 if self.send_unit_data(
                         build_common_packet_format(
                             DATA_ITEM['Connected'],
-                            ''.join(message_request),
+                            b''.join(message_request),
                             ADDRESS_ITEM['Connection Based'],
                             addr_data=self._target_cid,
                         )) is None:
@@ -916,6 +916,6 @@ class Driver(Base):
         len_tag = ".".join((tag, "LEN"))
         length = self.read_tag(len_tag)
         values = self.read_array(data_tag, length[0])
-        values = zip(*values)[1]
+        values = list(zip(*values))[1]
         char_array = [chr(ch) for ch in values]
         return ''.join(char_array)

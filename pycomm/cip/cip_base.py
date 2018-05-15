@@ -89,7 +89,7 @@ def unpack_bool(st):
     return 1 if not st[0] == 0 else 0
 
 def unpack_sint(st):
-    return int(struct.unpack('b', st[0])[0])
+    return int(struct.unpack('b', st[0:1])[0])
 
 
 def unpack_usint(st):
