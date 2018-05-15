@@ -916,6 +916,8 @@ class Driver(Base):
         len_tag = ".".join((tag, "LEN"))
         length = self.read_tag(len_tag)
         values = self.read_array(data_tag, length[0])
-        values = list(zip(*values))[1]
+        zipvalues = zip(*values)
+        next(zipvalues, '')
+        values = next(zipvalues, '')
         char_array = [chr(ch) for ch in values]
         return ''.join(char_array)
