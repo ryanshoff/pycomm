@@ -527,7 +527,7 @@ class Driver(Base):
                     try:    # Trying to add the rp to the request path list
                         val = PACK_DATA_FUNCTION[typ](value)
                         rp_list.append(
-                            chr(TAG_SERVICES_REQUEST['Write Tag'])
+                            bytes(TAG_SERVICES_REQUEST['Write Tag'])
                             + rp
                             + pack_uint(S_DATA_TYPE[typ])
                             + pack_uint(1)
@@ -606,7 +606,7 @@ class Driver(Base):
                 logger.warning(self._status)
                 raise DataError("Target did not connected. write_array will not be executed.")
 
-        array_of_values = ""
+        array_of_values = bytearray(b'')
         byte_size = 0
         byte_offset = 0
 
@@ -616,6 +616,7 @@ class Driver(Base):
             else:
                 array_of_values += PACK_DATA_FUNCTION[data_type](value)
             byte_size += DATA_FUNCTION_SIZE[data_type]
+            print(array_of_values)
 
             if byte_size >= 450 or i == len(values)-1:
                 # create the message and send the fragment
@@ -628,14 +629,15 @@ class Driver(Base):
                     # Creating the Message Request Packet
                     message_request = [
                         pack_uint(Base._get_sequence()),
-                        chr(TAG_SERVICES_REQUEST["Write Tag Fragmented"]),  # the Request Service
-                        chr(len(rp) / 2),                                   # the Request Path Size length in word
+                        bytes(TAG_SERVICES_REQUEST["Write Tag Fragmented"]),  # the Request Service
+                        bytes(len(rp) // 2),                                   # the Request Path Size length in word
                         rp,                                                 # the request path
                         pack_uint(S_DATA_TYPE[data_type]),                  # Data type to write
                         pack_uint(len(values)),                             # Number of elements to write
                         pack_dint(byte_offset),
-                        array_of_values                                     # Fragment of elements to write
+                        bytes(array_of_values)                                    # Fragment of elements to write
                     ]
+                    print(b''.join(message_request))
                     byte_offset += byte_size
 
                 if self.send_unit_data(
@@ -646,7 +648,7 @@ class Driver(Base):
                             addr_data=self._target_cid,
                         )) is None:
                     raise DataError("send_unit_data returned not valid data")
-                array_of_values = ""
+                array_of_values = bytearray(b'')
                 byte_size = 0
 
     def _get_instance_attribute_list_service(self):
@@ -919,5 +921,5 @@ class Driver(Base):
         zipvalues = zip(*values)
         next(zipvalues, '')
         values = next(zipvalues, '')
-        char_array = [chr(ch) for ch in values]
+        char_array = [bytes(ch) for ch in values]
         return ''.join(char_array)
