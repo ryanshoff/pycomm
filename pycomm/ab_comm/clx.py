@@ -569,6 +569,7 @@ class Driver(Base):
                     PACK_DATA_FUNCTION[typ](value)
                 ]
 
+        print(b''.join(message_request))
         ret_val = self.send_unit_data(
             build_common_packet_format(
                 DATA_ITEM['Connected'],
@@ -606,7 +607,7 @@ class Driver(Base):
                 logger.warning(self._status)
                 raise DataError("Target did not connected. write_array will not be executed.")
 
-        array_of_values = bytearray(b'')
+        array_of_values = b''
         byte_size = 0
         byte_offset = 0
 
@@ -616,7 +617,6 @@ class Driver(Base):
             else:
                 array_of_values += PACK_DATA_FUNCTION[data_type](value)
             byte_size += DATA_FUNCTION_SIZE[data_type]
-            print(array_of_values)
 
             if byte_size >= 450 or i == len(values)-1:
                 # create the message and send the fragment
@@ -635,7 +635,7 @@ class Driver(Base):
                         pack_uint(S_DATA_TYPE[data_type]),                  # Data type to write
                         pack_uint(len(values)),                             # Number of elements to write
                         pack_dint(byte_offset),
-                        bytes(array_of_values)                                    # Fragment of elements to write
+                        array_of_values                                    # Fragment of elements to write
                     ]
                     print(b''.join(message_request))
                     byte_offset += byte_size
@@ -648,7 +648,7 @@ class Driver(Base):
                             addr_data=self._target_cid,
                         )) is None:
                     raise DataError("send_unit_data returned not valid data")
-                array_of_values = bytearray(b'')
+                array_of_values = b''
                 byte_size = 0
 
     def _get_instance_attribute_list_service(self):
@@ -918,8 +918,6 @@ class Driver(Base):
         len_tag = ".".join((tag, "LEN"))
         length = self.read_tag(len_tag)
         values = self.read_array(data_tag, length[0])
-        zipvalues = zip(*values)
-        next(zipvalues, '')
-        values = next(zipvalues, '')
-        char_array = [bytes(ch) for ch in values]
+        values = list(zip(*values))[1]
+        char_array = [chr(ch) for ch in values]
         return ''.join(char_array)
