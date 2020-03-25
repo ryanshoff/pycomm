@@ -569,7 +569,7 @@ class Driver(Base):
                     PACK_DATA_FUNCTION[typ](value)
                 ]
 
-        print(b''.join(message_request))
+        #print(b''.join(message_request))
         ret_val = self.send_unit_data(
             build_common_packet_format(
                 DATA_ITEM['Connected'],
@@ -637,7 +637,7 @@ class Driver(Base):
                         pack_dint(byte_offset),
                         array_of_values                                    # Fragment of elements to write
                     ]
-                    print(b''.join(message_request))
+                    #print(b''.join(message_request))
                     byte_offset += byte_size
 
                 if self.send_unit_data(
@@ -911,13 +911,17 @@ class Driver(Base):
             data_to_send[idx] = ord(val)
 
         self.write_tag(len_tag, len(value), 'DINT')
-        self.write_array(data_tag, data_to_send, 'SINT')
+        #self.write_array(data_tag, data_to_send, 'SINT')
+        # hack because above doesn't work - RJS
+        for idx, val in enumerate(data_to_send):
+            self.write_tag(data_tag + '[' + str(idx) + ']', val, 'SINT')
 
     def read_string(self, tag):
         data_tag = ".".join((tag, "DATA"))
         len_tag = ".".join((tag, "LEN"))
         length = self.read_tag(len_tag)
         values = self.read_array(data_tag, length[0])
+        if values == []: return ''
         values = list(zip(*values))[1]
         char_array = [chr(ch) for ch in values]
         return ''.join(char_array)
